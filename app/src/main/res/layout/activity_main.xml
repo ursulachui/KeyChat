@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_alignParentTop="true"
+    android:layout_alignBottom="@id/log"
+    android:padding="10dp">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/log"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/textBox"
+        android:layout_marginBottom="12dp"
+        app:layout_constraintBottom_toTopOf="@id/textBox"
+        app:layout_constraintTop_toTopOf="parent" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/textBox">
+        <EditText
+            android:id="@+id/msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/send"
+            android:gravity="center_vertical"
+            android:layout_centerVertical="true"
+            android:hint="Send a message"/>
+
+        <Button
+            android:id="@+id/send"
+            android:layout_width="90dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:text="Send"/>
+    </RelativeLayout>
+</RelativeLayout>
