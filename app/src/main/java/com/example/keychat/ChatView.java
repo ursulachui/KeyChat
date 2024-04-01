@@ -1,5 +1,6 @@
 package com.example.keychat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
         log.setLayoutManager(new LinearLayoutManager(this));
 
         send.setOnClickListener(v -> {
+            Intent i = new Intent(MainActivity.this, ContactsView.class);
+            MainActivity.this.startActivity(i);
+
             String s = enterMsg.getText().toString();
             if(!s.isEmpty()) {
                 mva.addToLog(new Message(s, "Me"));
