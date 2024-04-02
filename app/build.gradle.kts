@@ -41,6 +41,10 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.activity)
+    implementation ("io.socket:socket.io-client:0.8.3") {
+        // excluding org.json which is provided by Android
+        exclude(group= "org.json", module= "json")
+    }
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
