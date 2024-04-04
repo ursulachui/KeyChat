@@ -29,15 +29,16 @@
         </activity>
         <activity
             android:name=".AddContact"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Add a Contact"/>
         <activity
             android:name=".ContactsView"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Chats"/>
         <activity
             android:name=".ChatView"
             android:exported="false"
-            android:label="Name"
-            android:theme="@style/Theme.KeyChat.NoActionBar" />
+            android:label="Name" />
     </application>
 
 </manifest>

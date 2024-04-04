@@ -26,9 +26,6 @@ import io.socket.emitter.Emitter;
 
 public class ContactsView extends AppCompatActivity {
 
-    public interface OnContactClickListener {
-        public void onClick(Contact item);
-    }
     private RecyclerView contactsView;
     private FloatingActionButton addContactBtn;
     @Override
@@ -38,13 +35,10 @@ public class ContactsView extends AppCompatActivity {
 
         contactsView = findViewById(R.id.contacts_list);
         addContactBtn = findViewById(R.id.add_contact);
-        ContactViewAdapter cva = new ContactViewAdapter(new ContactViewAdapter.OnContactClickListener() {
-            @Override
-            public void onClick(Contact item) {
-                Intent intent = new Intent(ContactsView.this, ChatView.class);
-                intent.putExtra("name", item.getName());
-                ContactsView.this.startActivity(intent);
-            }
+        ContactViewAdapter cva = new ContactViewAdapter(item -> {
+            Intent intent = new Intent(ContactsView.this, ChatView.class);
+            intent.putExtra("name", item.getName());
+            ContactsView.this.startActivity(intent);
         });
 
         contactsView.setAdapter(cva);
@@ -66,12 +60,9 @@ public class ContactsView extends AppCompatActivity {
             Log.d("TGT", Encryptor.getTgt());
         }
 
-        addContactBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(ContactsView.this, AddContact.class);
-                ContactsView.this.startActivity(i);
-            }
+        addContactBtn.setOnClickListener(v -> {
+            Intent i = new Intent(ContactsView.this, AddContact.class);
+            ContactsView.this.startActivity(i);
         });
     }
 }
