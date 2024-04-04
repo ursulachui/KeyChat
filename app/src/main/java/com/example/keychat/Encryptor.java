@@ -18,6 +18,29 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class Encryptor {
     private static SecretKey key;
+    private static String tgt;
+    private static String session_key;
+
+    public static String getTgt() {
+        return tgt;
+    }
+
+    public static void setTgt(String tgt) {
+        Encryptor.tgt = tgt;
+    }
+
+    public static String getSession_key() {
+        return session_key;
+    }
+
+    public static void setSession_key(String session_key) {
+        Encryptor.session_key = session_key;
+    }
+
+    public static SecretKey getKey() {
+        return key;
+    }
+
     public static String encrypt(String input) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, key);

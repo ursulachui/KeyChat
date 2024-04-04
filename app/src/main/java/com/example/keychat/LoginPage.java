@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -70,7 +73,6 @@ public class LoginPage extends AppCompatActivity {
                     @Override
                     public void call(Object... args) {
                         if((int) args[0] == 100) {
-                            Toaster.toast("Login Success", LoginPage.this);
                             socket.emit("register", email, new Ack() {
                                 @Override
                                 public void call(Object... args) {
@@ -80,6 +82,12 @@ public class LoginPage extends AppCompatActivity {
                                     try {
                                         Encryptor.setKey(password);
                                         decryptedPayload = Encryptor.decrypt(encryptedPayload);
+                                        JSONObject payload = new JSONObject(decryptedPayload);
+                                        Encryptor.setSession_key(payload.getString("session_key"));
+                                        Encryptor.setTgt(payload.getString("tgt"));
+                                        Intent i = new Intent(LoginPage.this, ContactsView.class);
+                                        i.putExtra("login", email);
+                                        LoginPage.this.startActivity(i);
                                     } catch (Exception e) {
                                         throw new RuntimeException(e);
                                     }
