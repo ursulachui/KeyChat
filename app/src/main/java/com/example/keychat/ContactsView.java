@@ -61,33 +61,6 @@ public class ContactsView extends AppCompatActivity {
             cva.addContact(new Contact(s, id));
         }
 
-        ServerConnection.setServerURL("https://a91d7cb5-a7b0-4704-8377-f6923bf9b731-00-34f1fcc6d41ia.worf.replit.dev/");
-        Socket socket = ServerConnection.getServerConnection();
-
-        socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(ContactsView.this, "Connected to server", Toast.LENGTH_SHORT).show();
-                        socket.emit("connected",  "Device " + Build.MODEL + " connected");
-                    }
-                });
-            }
-        });
-
-        socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(ContactsView.this, "Error connecting to server", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
         addContactBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
