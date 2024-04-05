@@ -51,9 +51,7 @@ public class ServerConnection {
     }
 
     public static Socket getServerConnection() {
-        if(socket == null){
-            init();
-        }
+        if(socket == null) init();
         return socket;
     }
 

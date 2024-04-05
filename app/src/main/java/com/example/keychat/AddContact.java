@@ -24,14 +24,11 @@ public class AddContact extends AppCompatActivity {
         addContactBtn = findViewById(R.id.add_contact);
         username = findViewById(R.id.username);
 
-        addContactBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String s = username.getText().toString();
-                Intent intent = new Intent(AddContact.this, ContactsView.class);
-                intent.putExtra("username", s);
-                AddContact.this.startActivity(intent);
-            }
+        addContactBtn.setOnClickListener(v -> {
+            String s = username.getText().toString();
+            Intent intent = new Intent(AddContact.this, ContactsView.class);
+            intent.putExtra("username", s);
+            AddContact.this.startActivity(intent);
         });
     }
 }

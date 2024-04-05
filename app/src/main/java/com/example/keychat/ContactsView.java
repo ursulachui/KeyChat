@@ -54,7 +54,8 @@ public class ContactsView extends AppCompatActivity {
             String s = intent.getStringExtra("username");
             int id = new Random().nextInt(100000);
             cva.addContact(new Contact(s, id));
-        } else if(intent.hasExtra("login")) {
+        }
+        if(intent.hasExtra("login")) {
             Toaster.toast("Signed in as " + intent.getStringExtra("login"), ContactsView.this);
             Log.d("SESSION_KEY", Encryptor.getSession_key());
             Log.d("TGT", Encryptor.getTgt());
