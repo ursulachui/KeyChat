@@ -16,7 +16,7 @@ import io.socket.client.Socket;
 
 public class ServerConnection {
     private static Socket socket = null;
-    public static String serverURL;
+    public static String serverURL = "https://a91d7cb5-a7b0-4704-8377-f6923bf9b731-00-34f1fcc6d41ia.worf.replit.dev/";
 
     private ServerConnection() {
         IO.Options options = new IO.Options();

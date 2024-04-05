@@ -3,6 +3,7 @@ package com.example.keychat;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -25,9 +26,6 @@ import io.socket.emitter.Emitter;
 
 public class ContactsView extends AppCompatActivity {
 
-    public interface OnContactClickListener {
-        public void onClick(Contact item);
-    }
     private RecyclerView contactsView;
     private FloatingActionButton addContactBtn;
     @Override
@@ -37,13 +35,10 @@ public class ContactsView extends AppCompatActivity {
 
         contactsView = findViewById(R.id.contacts_list);
         addContactBtn = findViewById(R.id.add_contact);
-        ContactViewAdapter cva = new ContactViewAdapter(new ContactViewAdapter.OnContactClickListener() {
-            @Override
-            public void onClick(Contact item) {
-                Intent intent = new Intent(ContactsView.this, ChatView.class);
-                intent.putExtra("name", item.getName());
-                ContactsView.this.startActivity(intent);
-            }
+        ContactViewAdapter cva = new ContactViewAdapter(item -> {
+            Intent intent = new Intent(ContactsView.this, ChatView.class);
+            intent.putExtra("name", item.getName());
+            ContactsView.this.startActivity(intent);
         });
 
         contactsView.setAdapter(cva);
@@ -59,41 +54,15 @@ public class ContactsView extends AppCompatActivity {
             String s = intent.getStringExtra("username");
             int id = new Random().nextInt(100000);
             cva.addContact(new Contact(s, id));
+        } else if(intent.hasExtra("login")) {
+            Toaster.toast("Signed in as " + intent.getStringExtra("login"), ContactsView.this);
+            Log.d("SESSION_KEY", Encryptor.getSession_key());
+            Log.d("TGT", Encryptor.getTgt());
         }
 
-        ServerConnection.setServerURL("https://a91d7cb5-a7b0-4704-8377-f6923bf9b731-00-34f1fcc6d41ia.worf.replit.dev/");
-        Socket socket = ServerConnection.getServerConnection();
-
-        socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(ContactsView.this, "Connected to server", Toast.LENGTH_SHORT).show();
-                        socket.emit("connected",  "Device " + Build.MODEL + " connected");
-                    }
-                });
-            }
-        });
-
-        socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(ContactsView.this, "Error connecting to server", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
-        addContactBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(ContactsView.this, AddContact.class);
-                ContactsView.this.startActivity(i);
-            }
+        addContactBtn.setOnClickListener(v -> {
+            Intent i = new Intent(ContactsView.this, AddContact.class);
+            ContactsView.this.startActivity(i);
         });
     }
 }
