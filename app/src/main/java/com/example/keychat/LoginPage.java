@@ -1,8 +1,10 @@
 package com.example.keychat;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.system.Os;
 import android.util.Base64;
 import android.util.JsonReader;
 import android.util.Log;
@@ -38,6 +40,7 @@ public class LoginPage extends AppCompatActivity {
     private EditText emailText;
     private EditText passwordText;
     private Button login;
+    private TextView status;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,81 +50,49 @@ public class LoginPage extends AppCompatActivity {
         emailText = findViewById(R.id.editTextTextEmailAddress);
         passwordText = findViewById(R.id.editTextTextPassword);
         login = findViewById(R.id.button);
+        status = findViewById(R.id.server_status);
 
         Socket socket = ServerConnection.getServerConnection();
-        socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-               socket.emit("connected",  "Device " + Build.MODEL + " connected");
-               Toaster.toast("Connected to server", LoginPage.this);
-            }
-        });
+        socket.on(Socket.EVENT_CONNECT, args -> runOnUiThread(() -> {
+               status.setText("Connected to server");
+               status.setTextColor(Color.GREEN);
+        }));
 
-        socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                Toaster.toast("Error connecting to server", LoginPage.this);
-            }
-        });
+        socket.on(Socket.EVENT_CONNECT_ERROR, args -> runOnUiThread(() -> {
+            status.setText("Error connecting to server");
+            status.setTextColor(Color.RED);
+        }));
 
-        login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = emailText.getText().toString();
-                String password = passwordText.getText().toString();
-                socket.emit("get_login", email + "," + password, new Ack() {
-                    @Override
-                    public void call(Object... args) {
-                        if((int) args[0] == 100) {
-                            socket.emit("register", email, new Ack() {
-                                @Override
-                                public void call(Object... args) {
-                                    String encryptedPayload = (String) args[0];
-                                    String decryptedPayload = null;
-                                    Log.d("KEY", encryptedPayload);
-                                    try {
-                                        Encryptor.setKey(password);
-                                        decryptedPayload = Encryptor.decrypt(encryptedPayload);
-                                        JSONObject payload = new JSONObject(decryptedPayload);
-                                        Encryptor.setSession_key(payload.getString("session_key"));
-                                        Encryptor.setTgt(payload.getString("tgt"));
-                                        Intent i = new Intent(LoginPage.this, ContactsView.class);
-                                        i.putExtra("login", email);
-                                        LoginPage.this.startActivity(i);
-                                    } catch (Exception e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                    Log.d("KEY", decryptedPayload);
-                                }
-                            });
-                        } else {
-                            Toaster.toast("Login failed", LoginPage.this);
-                        }
+        login.setOnClickListener(v -> {
+            String email = emailText.getText().toString();
+            String password = passwordText.getText().toString();
+            socket.emit("get_login", email + "," + password, new Ack() {
+                @Override
+                public void call(Object... args) {
+                    if((int) args[0] == 100) {
+                        socket.emit("register", email, (Ack) args1 -> {
+                            String encryptedPayload = (String) args1[0];
+                            String decryptedPayload = null;
+                            Log.d("KEY", encryptedPayload);
+                            try {
+                                Encryptor.setKey(password);
+                                decryptedPayload = Encryptor.decrypt(encryptedPayload);
+                                JSONObject payload = new JSONObject(decryptedPayload);
+                                Encryptor.setSession_key(payload.getString("session_key"));
+                                Encryptor.setTgt(payload.getString("tgt"));
+                                Intent i = new Intent(LoginPage.this, ContactsView.class);
+                                i.putExtra("login", email);
+                                LoginPage.this.startActivity(i);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                            Log.d("KEY", decryptedPayload);
+                        });
+                    } else {
+                        Toaster.toast("Login failed", LoginPage.this);
                     }
-                });
-            }
-        });
-
-//        socket.on("register", new Emitter.Listener() {
-//            @Override
-//            public void call(Object... args) {
-//
-//            }
-//        })
-
-        socket.on("tgt_get", new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                String tgt = (String) args[0];
-                Toaster.toast(tgt, LoginPage.this);
-            }
-        });
-
-        socket.on("ticket_get", new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-
-            }
+                }
+            });
         });
     }
 }
