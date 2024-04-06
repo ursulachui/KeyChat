@@ -16,11 +16,14 @@
         android:theme="@style/Theme.KeyChat"
         tools:targetApi="31">
         <activity
+            android:name=".AddAnnouncement"
+            android:exported="false" />
+        <activity
             android:name=".AnnouncementBoard"
             android:exported="false" />
         <activity
             android:name=".LoginPage"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,11 +33,11 @@
         <activity
             android:name=".AddContact"
             android:exported="false"
-            android:label="Add a Contact"/>
+            android:label="Add a Contact" />
         <activity
             android:name=".ContactsView"
             android:exported="false"
-            android:label="Chats"/>
+            android:label="Chats" />
         <activity
             android:name=".ChatView"
             android:exported="false"
