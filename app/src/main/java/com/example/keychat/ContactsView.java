@@ -20,6 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
@@ -53,6 +56,18 @@ public class ContactsView extends AppCompatActivity {
 
         contactsView.setAdapter(cva);
         contactsView.setLayoutManager(new LinearLayoutManager(this));
+
+        Socket socket = ServerConnection.getServerConnection();
+        socket.emit("get_user_contacts", UserInfo.getUserID());
+
+        socket.on("user_contacts", args -> {
+            JSONObject contacts = (JSONObject) args[0];
+            try {
+                String[] contactIDs = (String[]) contacts.get("contacts");
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         ArrayList<Contact> contacts = new ArrayList<>();
         cva.addContact(new Contact("Alice", new Random().nextInt(100000)));
