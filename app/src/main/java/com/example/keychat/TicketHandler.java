@@ -3,10 +3,10 @@ package com.example.keychat;
 import javax.crypto.SecretKey;
 
 public class TicketHandler {
-    private static String ticket;
+    private static byte[] ticket;
     private static SecretKey shared_key;
 
-    public static void setTicket(String ticket) {
+    public static void setTicket(byte[] ticket) {
         TicketHandler.ticket = ticket;
     }
 
@@ -14,7 +14,7 @@ public class TicketHandler {
         TicketHandler.shared_key = shared_key;
     }
 
-    public static String getTicket() {
+    public static byte[] getTicket() {
         return ticket;
     }
 
