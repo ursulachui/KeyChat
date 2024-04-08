@@ -9,7 +9,9 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -27,14 +29,19 @@ import io.socket.emitter.Emitter;
 public class ContactsView extends AppCompatActivity {
 
     private RecyclerView contactsView;
-    private FloatingActionButton addContactBtn;
+    private Button addContactBtn;
+    private Button viewAnnounceBtn;
+    private Button newAnnounceBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts_view);
 
         contactsView = findViewById(R.id.contacts_list);
-        addContactBtn = findViewById(R.id.add_contact);
+        addContactBtn = findViewById(R.id.add_contact_btn);
+        viewAnnounceBtn = findViewById(R.id.announcements_btn);
+        newAnnounceBtn = findViewById(R.id.new_btn);
+
         ContactViewAdapter cva = new ContactViewAdapter(item -> {
             Intent intent = new Intent(ContactsView.this, ChatView.class);
             intent.putExtra("name", item.getName());
@@ -63,6 +70,16 @@ public class ContactsView extends AppCompatActivity {
 
         addContactBtn.setOnClickListener(v -> {
             Intent i = new Intent(ContactsView.this, AddContact.class);
+            ContactsView.this.startActivity(i);
+        });
+
+        viewAnnounceBtn.setOnClickListener(v -> {
+            Intent i = new Intent(ContactsView.this, AnnouncementBoard.class);
+            ContactsView.this.startActivity(i);
+        });
+
+        newAnnounceBtn.setOnClickListener(v -> {
+            Intent i = new Intent(ContactsView.this, AddAnnouncement.class);
             ContactsView.this.startActivity(i);
         });
     }
