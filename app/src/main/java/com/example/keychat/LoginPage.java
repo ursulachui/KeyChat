@@ -31,6 +31,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import io.socket.client.Ack;
 import io.socket.client.Socket;
@@ -69,6 +70,7 @@ public class LoginPage extends AppCompatActivity {
         login.setOnClickListener(v -> {
             String email = emailText.getText().toString();
             String password = passwordText.getText().toString();
+            String tgt;
             socket.emit("get_login", email + "," + password, (Ack) args -> {
                 if((int) args[0] == 100) {
                     socket.emit("register", email, (Ack) args1 -> {
@@ -89,6 +91,25 @@ public class LoginPage extends AppCompatActivity {
                         }
                         Log.d("KEY", new String(decryptedSessionKey, StandardCharsets.UTF_8));
                         Log.d("TGT", new String(decryptedTgt, StandardCharsets.UTF_8));
+
+                    });
+                    String username = "text";
+                    String recipient = "server";
+                    socket.emit("get_ticket", username, recipient, Encryptor.getTgt(), (Ack) ticketArgs -> {
+                       String recipientResponse = (String) ticketArgs[0];
+                       byte[] encryptedSharedKey = (byte[]) ticketArgs[1];
+                       byte[] encryptedTicket = (byte[]) ticketArgs[2];
+                       byte[] decryptedSharedKey;
+                       byte[] decryptedTicket;
+                       try {
+                           decryptedSharedKey = Encryptor.decrypt(encryptedSharedKey,Encryptor.getSession_key());
+                           decryptedTicket = Encryptor.decrypt(encryptedTicket,Encryptor.getSession_key());
+                       } catch (Exception e) {
+                           throw new RuntimeException(e);
+                       }
+                       TicketHandler.setTicket(decryptedTicket);
+                       TicketHandler.setShared_key(new SecretKeySpec(decryptedSharedKey,"AES"));
+
                     });
                 } else {
                     Toaster.toast("Login failed", LoginPage.this);
