@@ -16,20 +16,14 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -44,6 +38,7 @@ public class LoginPage extends AppCompatActivity {
     private Button login;
     private TextView status;
     private Button register;
+    private String password;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,52 +64,82 @@ public class LoginPage extends AppCompatActivity {
 
         login.setOnClickListener(v -> {
             String email = emailText.getText().toString();
-            String password = passwordText.getText().toString();
-            String tgt;
-            socket.emit("get_login", email + "," + password, (Ack) args -> {
-                if((int) args[0] == 100) {
-                    socket.emit("register", email, (Ack) args1 -> {
-                        byte[] encryptedSessionKey = (byte[]) args1[0];
-                        byte[] encryptedTgt = (byte[]) args1[1];
-                        byte[] decryptedSessionKey = null;
-                        byte[] decryptedTgt = null;
-                        Log.d("KEY", new String(encryptedSessionKey, StandardCharsets.UTF_8));
-                        try {
-                            SecretKey passwordKey = Encryptor.getKeyFromString(password);
-                            decryptedSessionKey = Encryptor.decrypt(encryptedSessionKey, passwordKey);
-                            decryptedTgt = Encryptor.decrypt(encryptedTgt, passwordKey);
-                            Intent i = new Intent(LoginPage.this, ContactsView.class);
-                            i.putExtra("login", email);
-                            LoginPage.this.startActivity(i);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        Log.d("KEY", new String(decryptedSessionKey, StandardCharsets.UTF_8));
-                        Log.d("TGT", new String(decryptedTgt, StandardCharsets.UTF_8));
+            password = passwordText.getText().toString();
+            JSONObject loginInfo = new JSONObject();
+            try {
+                loginInfo.accumulate("email", email);
+                loginInfo.accumulate("password_hash", password);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            socket.emit("login", loginInfo);
+        });
 
-                    });
-                    String username = "text";
-                    String recipient = "server";
-                    socket.emit("get_ticket", username, recipient, Encryptor.getTgt(), (Ack) ticketArgs -> {
-                       String recipientResponse = (String) ticketArgs[0];
-                       byte[] encryptedSharedKey = (byte[]) ticketArgs[1];
-                       byte[] encryptedTicket = (byte[]) ticketArgs[2];
-                       byte[] decryptedSharedKey;
-                       byte[] decryptedTicket;
-                       try {
-                           decryptedSharedKey = Encryptor.decrypt(encryptedSharedKey,Encryptor.getSession_key());
-                           decryptedTicket = Encryptor.decrypt(encryptedTicket,Encryptor.getSession_key());
-                       } catch (Exception e) {
-                           throw new RuntimeException(e);
-                       }
-                       TicketHandler.setTicket(decryptedTicket);
-                       TicketHandler.setShared_key(new SecretKeySpec(decryptedSharedKey,"AES"));
+        socket.on("login_success", args -> {
+            try {
+                JSONObject employeeInfo = ((JSONObject) args[0]).getJSONObject("employee");
+                UserInfo.setUserID(employeeInfo.getString("_id"));
+                UserInfo.setUsername(employeeInfo.getString("username"));
+                UserInfo.setEmail(employeeInfo.getString("email"));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
 
-                    });
-                } else {
-                    Toaster.toast("Login failed", LoginPage.this);
+            SecretKey passwordKey;
+            try {
+                passwordKey = Encryptor.getKeyFromPassword(password);
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+            SecretKey finalPasswordKey = passwordKey;
+            socket.emit("register", UserInfo.getEmail(), passwordKey.getEncoded(), (Ack) args1 -> {
+                byte[] encryptedSessionKey = (byte[]) args1[0];
+                byte[] encryptedTgt = (byte[]) args1[1];
+                byte[] decryptedSessionKey = null;
+                byte[] decryptedTgt = null;
+                Log.d("KEY", new String(encryptedSessionKey, StandardCharsets.UTF_8));
+                try {
+                    decryptedSessionKey = Encryptor.decrypt(encryptedSessionKey, finalPasswordKey);
+                    decryptedTgt = Encryptor.decrypt(encryptedTgt, finalPasswordKey);
+                    Intent i = new Intent(LoginPage.this, ContactsView.class);
+                    i.putExtra("login", UserInfo.getEmail());
+                    LoginPage.this.startActivity(i);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
+                Log.d("KEY", new String(decryptedSessionKey, StandardCharsets.UTF_8));
+                Log.d("TGT", new String(decryptedTgt, StandardCharsets.UTF_8));
+                String username = "text";
+                String recipient = "server";
+                socket.emit("get_ticket", username, recipient, Encryptor.getTgt(), (Ack) ticketArgs -> {
+                    String recipientResponse = (String) ticketArgs[0];
+                    byte[] encryptedSharedKey = (byte[]) ticketArgs[1];
+                    byte[] encryptedTicket = (byte[]) ticketArgs[2];
+                    byte[] decryptedSharedKey;
+                    byte[] decryptedTicket;
+                    try {
+                        decryptedSharedKey = Encryptor.decrypt(encryptedSharedKey,Encryptor.getSession_key());
+                        decryptedTicket = Encryptor.decrypt(encryptedTicket,Encryptor.getSession_key());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    TicketHandler.setTicket(decryptedTicket);
+                    TicketHandler.setShared_key(new SecretKeySpec(decryptedSharedKey,"AES"));
+                });
             });
+            Toaster.toast("Login Success", LoginPage.this);
+        });
+
+        socket.on("login_failure", args -> Toaster.toast("Login Failed", LoginPage.this));
+
+        socket.on("error", args -> {
+            Toaster.toast("Login Error", LoginPage.this);
+            JSONObject error = (JSONObject) args[0];
+            try {
+                Log.d("error", error.getString("error"));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         register.setOnClickListener(v -> {

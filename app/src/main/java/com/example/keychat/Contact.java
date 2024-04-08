@@ -3,8 +3,8 @@ package com.example.keychat;
 public class Contact {
 
     private String name;
-    private int id;
-    public Contact(String name, int id) {
+    private String id;
+    public Contact(String name, String id) {
         this.name = name;
         this.id = id;
     }
@@ -13,7 +13,7 @@ public class Contact {
         return name;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 }

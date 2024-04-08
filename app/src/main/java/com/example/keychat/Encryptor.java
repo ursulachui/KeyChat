@@ -66,8 +66,10 @@ public class Encryptor {
 
     public static SecretKey getKeyFromPassword(String password) throws NoSuchAlgorithmException {
         byte[] inputBytes = password.getBytes(StandardCharsets.UTF_8);
+        for(byte b : inputBytes) Log.d("initial", String.valueOf(b));
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] newKey = md.digest(inputBytes);
+        for(byte b : inputBytes) Log.d("md", String.valueOf(b));
         return new SecretKeySpec(newKey,"AES");
     }
 }

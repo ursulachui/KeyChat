@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,6 +38,8 @@ public class ContactsView extends AppCompatActivity {
     private Button viewAnnounceBtn;
     private Button newAnnounceBtn;
     private Button profileBtn;
+
+    private JSONArray employees;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,27 +61,39 @@ public class ContactsView extends AppCompatActivity {
         contactsView.setLayoutManager(new LinearLayoutManager(this));
 
         Socket socket = ServerConnection.getServerConnection();
-        socket.emit("get_user_contacts", UserInfo.getUserID());
+        socket.emit("get_all_employees");
+
+        socket.on("all_employees", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                employees = (JSONArray) args[0];
+                socket.emit("get_user_contacts");
+            }
+        });
 
         socket.on("user_contacts", args -> {
             JSONObject contacts = (JSONObject) args[0];
             try {
                 String[] contactIDs = (String[]) contacts.get("contacts");
+                for(String id : contactIDs) {
+                    for(int i = 0; i < employees.length(); i++) {
+                        JSONObject employee = employees.getJSONObject(i);
+                        if(employee.get("_id").equals(id)) {
+                            cva.addContact(new Contact(employee.getString("username"), employee.getString("_id")));
+                        }
+                    }
+                }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        ArrayList<Contact> contacts = new ArrayList<>();
-        cva.addContact(new Contact("Alice", new Random().nextInt(100000)));
-        cva.addContact(new Contact("Bob", new Random().nextInt(100000)));
-
         Intent intent = getIntent();
         if(intent.hasExtra("username")){
             //TODO: Check if user exists
-            String s = intent.getStringExtra("username");
-            int id = new Random().nextInt(100000);
-            cva.addContact(new Contact(s, id));
+            String username = intent.getStringExtra("username");
+            String id = intent.getStringExtra("userid");
+            cva.addContact(new Contact(username, id));
         }
         if(intent.hasExtra("login")) {
             Toaster.toast("Signed in as " + intent.getStringExtra("login"), ContactsView.this);
