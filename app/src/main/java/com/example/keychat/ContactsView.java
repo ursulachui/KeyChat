@@ -67,19 +67,26 @@ public class ContactsView extends AppCompatActivity {
             @Override
             public void call(Object... args) {
                 employees = (JSONArray) args[0];
-                socket.emit("get_user_contacts");
+                socket.emit("get_user_contacts", UserInfo.getUserID());
             }
         });
 
         socket.on("user_contacts", args -> {
-            JSONObject contacts = (JSONObject) args[0];
+            JSONArray contacts = null;
             try {
-                String[] contactIDs = (String[]) contacts.get("contacts");
-                for(String id : contactIDs) {
+                contacts = ((JSONObject) args[0]).getJSONArray("contacts");
+                for(int j = 0; j < contacts.length(); j++) {
+                    String id = contacts.getJSONObject(j).getString("contactUserId");
                     for(int i = 0; i < employees.length(); i++) {
                         JSONObject employee = employees.getJSONObject(i);
                         if(employee.get("_id").equals(id)) {
-                            cva.addContact(new Contact(employee.getString("username"), employee.getString("_id")));
+                            runOnUiThread(() -> {
+                                try {
+                                    cva.addContact(new Contact(employee.getString("username"), employee.getString("_id")));
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
                         }
                     }
                 }
