@@ -30,6 +30,7 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 import io.socket.client.Ack;
 import io.socket.client.Socket;
@@ -68,31 +69,29 @@ public class LoginPage extends AppCompatActivity {
         login.setOnClickListener(v -> {
             String email = emailText.getText().toString();
             String password = passwordText.getText().toString();
-            socket.emit("get_login", email + "," + password, new Ack() {
-                @Override
-                public void call(Object... args) {
-                    if((int) args[0] == 100) {
-                        socket.emit("register", email, (Ack) args1 -> {
-                            String encryptedPayload = (String) args1[0];
-                            String decryptedPayload = null;
-                            Log.d("KEY", encryptedPayload);
-                            try {
-                                Encryptor.setKey(password);
-                                decryptedPayload = Encryptor.decrypt(encryptedPayload);
-                                JSONObject payload = new JSONObject(decryptedPayload);
-                                Encryptor.setSession_key(payload.getString("session_key"));
-                                Encryptor.setTgt(payload.getString("tgt"));
-                                Intent i = new Intent(LoginPage.this, ContactsView.class);
-                                i.putExtra("login", email);
-                                LoginPage.this.startActivity(i);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                            Log.d("KEY", decryptedPayload);
-                        });
-                    } else {
-                        Toaster.toast("Login failed", LoginPage.this);
-                    }
+            socket.emit("get_login", email + "," + password, (Ack) args -> {
+                if((int) args[0] == 100) {
+                    socket.emit("register", email, (Ack) args1 -> {
+                        byte[] encryptedSessionKey = (byte[]) args1[0];
+                        byte[] encryptedTgt = (byte[]) args1[1];
+                        byte[] decryptedSessionKey = null;
+                        byte[] decryptedTgt = null;
+                        Log.d("KEY", new String(encryptedSessionKey, StandardCharsets.UTF_8));
+                        try {
+                            SecretKey passwordKey = Encryptor.getKeyFromString(password);
+                            decryptedSessionKey = Encryptor.decrypt(encryptedSessionKey, passwordKey);
+                            decryptedTgt = Encryptor.decrypt(encryptedTgt, passwordKey);
+                            Intent i = new Intent(LoginPage.this, ContactsView.class);
+                            i.putExtra("login", email);
+                            LoginPage.this.startActivity(i);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        Log.d("KEY", new String(decryptedSessionKey, StandardCharsets.UTF_8));
+                        Log.d("TGT", new String(decryptedTgt, StandardCharsets.UTF_8));
+                    });
+                } else {
+                    Toaster.toast("Login failed", LoginPage.this);
                 }
             });
         });

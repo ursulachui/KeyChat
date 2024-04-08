@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -66,8 +67,6 @@ public class ContactsView extends AppCompatActivity {
         }
         if(intent.hasExtra("login")) {
             Toaster.toast("Signed in as " + intent.getStringExtra("login"), ContactsView.this);
-            Log.d("SESSION_KEY", Encryptor.getSession_key());
-            Log.d("TGT", Encryptor.getTgt());
         }
 
         addContactBtn.setOnClickListener(v -> {
