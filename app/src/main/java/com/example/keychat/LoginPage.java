@@ -41,6 +41,7 @@ public class LoginPage extends AppCompatActivity {
     private EditText passwordText;
     private Button login;
     private TextView status;
+    private Button register;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +52,7 @@ public class LoginPage extends AppCompatActivity {
         passwordText = findViewById(R.id.editTextTextPassword);
         login = findViewById(R.id.button);
         status = findViewById(R.id.server_status);
+        register = findViewById(R.id.new_account);
 
         Socket socket = ServerConnection.getServerConnection();
         socket.on(Socket.EVENT_CONNECT, args -> runOnUiThread(() -> {
@@ -93,6 +95,11 @@ public class LoginPage extends AppCompatActivity {
                     }
                 }
             });
+        });
+
+        register.setOnClickListener(v -> {
+            Intent i = new Intent(LoginPage.this, RegisterPage.class);
+            startActivity(i);
         });
     }
 }

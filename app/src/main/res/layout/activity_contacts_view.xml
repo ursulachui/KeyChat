@@ -24,29 +24,32 @@
         android:layout_alignParentBottom="true"
         android:orientation="horizontal">
         <Button
+            android:id="@+id/profile_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Announcement\nBoard"
-            android:textSize="11dp"
-            android:layout_margin="5dp"
+            android:textSize="10dp"
+            android:text="View\nProfile">
+        </Button>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Announcemnt\nBoard"
+            android:textSize="10dp"
             android:id="@+id/announcements_btn">
         </Button>
         <Button
             android:id="@+id/new_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="11dp"
-            android:text="New\nAnnouncement"
-            android:layout_margin="5dp"
+            android:textSize="10dp"
+            android:text="New\nAnnouncemnt"
             android:layout_alignEnd="@id/announcements_btn"/>
-
         <Button
             android:id="@+id/add_contact_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="11dp"
-            android:text="Add Contact"
-            android:layout_margin="5dp">
+            android:textSize="10dp"
+            android:text="Add\nContact">
         </Button>
     </LinearLayout>
 

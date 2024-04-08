@@ -32,6 +32,7 @@ public class ContactsView extends AppCompatActivity {
     private Button addContactBtn;
     private Button viewAnnounceBtn;
     private Button newAnnounceBtn;
+    private Button profileBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +42,7 @@ public class ContactsView extends AppCompatActivity {
         addContactBtn = findViewById(R.id.add_contact_btn);
         viewAnnounceBtn = findViewById(R.id.announcements_btn);
         newAnnounceBtn = findViewById(R.id.new_btn);
+        profileBtn = findViewById(R.id.profile_btn);
 
         ContactViewAdapter cva = new ContactViewAdapter(item -> {
             Intent intent = new Intent(ContactsView.this, ChatView.class);
@@ -80,6 +82,10 @@ public class ContactsView extends AppCompatActivity {
 
         newAnnounceBtn.setOnClickListener(v -> {
             Intent i = new Intent(ContactsView.this, AddAnnouncement.class);
+            ContactsView.this.startActivity(i);
+        });
+        profileBtn.setOnClickListener(v -> {
+            Intent i = new Intent(ContactsView.this, ProfilePage.class);
             ContactsView.this.startActivity(i);
         });
     }
