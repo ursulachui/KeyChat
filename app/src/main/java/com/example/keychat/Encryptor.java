@@ -6,8 +6,10 @@ import android.util.Log;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -60,5 +62,13 @@ public class Encryptor {
 
     public static SecretKey getKeyFromString(String newKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
         return new SecretKeySpec(newKey.getBytes(StandardCharsets.UTF_8), "AES");
+    }
+
+    public static SecretKey getKeyFromPassword(String password) throws NoSuchAlgorithmException {
+        byte[] inputBytes = password.getBytes(StandardCharsets.UTF_8);
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] newKey = md.digest(inputBytes);
+        return new SecretKeySpec(newKey,"AES");
+
     }
 }
