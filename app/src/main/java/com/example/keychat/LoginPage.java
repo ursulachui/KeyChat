@@ -93,7 +93,7 @@ public class LoginPage extends AppCompatActivity {
                         Log.d("TGT", new String(decryptedTgt, StandardCharsets.UTF_8));
 
                     });
-                    String username = "text";
+                    String username = UserInfo.getUsername();
                     String recipient = "server";
                     socket.emit("get_ticket", username, recipient, Encryptor.getTgt(), (Ack) ticketArgs -> {
                        String recipientResponse = (String) ticketArgs[0];
