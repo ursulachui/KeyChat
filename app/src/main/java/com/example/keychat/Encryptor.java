@@ -69,6 +69,5 @@ public class Encryptor {
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] newKey = md.digest(inputBytes);
         return new SecretKeySpec(newKey,"AES");
-
     }
 }
