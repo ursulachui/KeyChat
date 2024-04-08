@@ -39,8 +39,9 @@
 
     <EditText
         android:id="@+id/editTextText3"
+        style="@style/Widget.AppCompat.EditText"
         android:layout_width="410dp"
-        android:layout_height="49dp"
+        android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="text"
         android:text=" Enter role"
@@ -52,7 +53,7 @@
     <EditText
         android:id="@+id/editTextText4"
         android:layout_width="412dp"
-        android:layout_height="51dp"
+        android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="text"
         android:text=" Enter email"
@@ -86,11 +87,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextText3" />
 
+    <EditText
+        android:id="@+id/editTextNumber2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:inputType="number"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView19" />
+
     <TextView
         android:id="@+id/textView19"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="52dp"
+        android:layout_marginTop="44dp"
         android:text="  Age:"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textSize="20sp"
@@ -98,17 +111,6 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextText4" />
-
-    <EditText
-        android:id="@+id/editTextNumber2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
     <TextView
         android:id="@+id/textView20"
