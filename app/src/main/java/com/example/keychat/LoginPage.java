@@ -109,7 +109,17 @@ public class LoginPage extends AppCompatActivity {
                        }
                        TicketHandler.setTicket(decryptedTicket);
                        TicketHandler.setShared_key(new SecretKeySpec(decryptedSharedKey,"AES"));
-
+                    });
+                    socket.emit("use_ticket", username, recipient, TicketHandler.getTicket(), (Ack) useticketargs -> {
+                        byte[] useTicketResponse = (byte[]) useticketargs[0];
+                        try {
+                            String decryptedUseTicketResponse = new String(Encryptor.decrypt(useTicketResponse,TicketHandler.getShared_key()), StandardCharsets.UTF_8);
+                            if (!decryptedUseTicketResponse.equals("100")) {
+                                Log.d("ERROR response:", decryptedUseTicketResponse);
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException();
+                        }
                     });
                 } else {
                     Toaster.toast("Login failed", LoginPage.this);
