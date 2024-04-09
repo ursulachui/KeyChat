@@ -25,9 +25,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+import io.socket.client.Ack;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
@@ -40,6 +47,16 @@ public class ContactsView extends AppCompatActivity {
     private Button profileBtn;
 
     private JSONArray employees;
+
+    private ArrayList<Chat> chats = new ArrayList<>();
+
+    private Chat getChatFromContact(Contact c){
+        for(Chat chat: chats) {
+            if(chat.getContact() == c) return chat;
+        }
+        return null;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,14 +114,36 @@ public class ContactsView extends AppCompatActivity {
 
         Intent intent = getIntent();
         if(intent.hasExtra("username")){
-            //TODO: Check if user exists
             String username = intent.getStringExtra("username");
             String id = intent.getStringExtra("userid");
-            cva.addContact(new Contact(username, id));
+            Contact c = new Contact(username, id);
+            cva.addContact(c);
+            JSONArray participants = new JSONArray().put(UserInfo.getUserID()).put(id);
+            socket.emit("create_chat", participants, UserInfo.getUsername() + " and " + username);
+            chats.add(new Chat(c, "filler"));
         }
         if(intent.hasExtra("login")) {
             Toaster.toast("Signed in as " + intent.getStringExtra("login"), ContactsView.this);
         }
+
+        socket.on("chat_created", args -> {
+            try {
+                byte[] encryptedChatID = (byte[]) args[0];
+                byte[] decryptedChatID = Encryptor.decrypt(encryptedChatID, TicketHandler.getShared_key());
+                Log.d("CHATID", new String(decryptedChatID, StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        socket.on("chat_error", args -> {
+            JSONObject error = (JSONObject) args[0];
+            try {
+                Log.d("ERROR", error.getString("error"));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         addContactBtn.setOnClickListener(v -> {
             Intent i = new Intent(ContactsView.this, AddContact.class);

@@ -113,7 +113,7 @@ public class LoginPage extends AppCompatActivity {
                 Encryptor.setSession_key(Encryptor.getKeyFromBytes(decryptedSessionKey));
                 String username = "text";
                 String recipient = "server";
-                socket.emit("get_ticket", username, recipient, Encryptor.getTgt(), (Ack) ticketArgs -> {
+                socket.emit("get_ticket", UserInfo.getUserID(), recipient, Encryptor.getTgt(), (Ack) ticketArgs -> {
                     byte[] recipientResponse = (byte[]) ticketArgs[0];
                     byte[] encryptedSharedKey = (byte[]) ticketArgs[1];
                     byte[] encryptedTicket = (byte[]) ticketArgs[2];
@@ -128,7 +128,7 @@ public class LoginPage extends AppCompatActivity {
                     Log.d("TICKET", new String(decryptedTicket, StandardCharsets.UTF_8));
                     TicketHandler.setTicket(decryptedTicket);
                     TicketHandler.setShared_key(new SecretKeySpec(decryptedSharedKey,"AES"));
-                    socket.emit("use_ticket", username, recipient, TicketHandler.getTicket(), (Ack) useticketargs -> {
+                    socket.emit("use_ticket", UserInfo.getUserID(), recipient, TicketHandler.getTicket(), (Ack) useticketargs -> {
                         byte[] useTicketResponse = (byte[]) useticketargs[0];
                         try {
                             String decryptedUseTicketResponse = new String(Encryptor.decrypt(useTicketResponse,TicketHandler.getShared_key()), StandardCharsets.UTF_8);
@@ -138,7 +138,7 @@ public class LoginPage extends AppCompatActivity {
                                 Log.d("Ticket Response", decryptedUseTicketResponse);
                             }
                         } catch (Exception e) {
-                            throw new RuntimeException();
+                            throw new RuntimeException(e);
                         }
                     });
                 });

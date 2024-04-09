@@ -47,7 +47,7 @@ public class Encryptor {
     }
 
     public static String decrypt(String input, SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        byte[] cipherbytes = Base64.decode(input, Base64.DEFAULT);
+        byte[] cipherbytes = input.getBytes();
         Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, key);
         byte[] plainText = cipher.doFinal(cipherbytes);
