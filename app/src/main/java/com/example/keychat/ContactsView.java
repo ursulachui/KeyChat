@@ -81,6 +81,9 @@ public class ContactsView extends AppCompatActivity {
         socket.on("user_contacts", args -> {
             JSONArray contacts = null;
             try {
+                runOnUiThread(() -> {
+                    cva.clearContacts();
+                });
                 contacts = ((JSONObject) args[0]).getJSONArray("contacts");
                 for(int j = 0; j < contacts.length(); j++) {
                     String id = contacts.getJSONObject(j).getString("contactUserId");
@@ -89,7 +92,6 @@ public class ContactsView extends AppCompatActivity {
                         if(employee.get("_id").equals(id)) {
                             runOnUiThread(() -> {
                                 try {
-                                    cva.clearContacts();
                                     cva.addContact(new Contact(employee.getString("username"), employee.getString("_id")));
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
