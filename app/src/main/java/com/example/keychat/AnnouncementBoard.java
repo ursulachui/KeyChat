@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import io.socket.client.Ack;
 import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,8 +30,14 @@ public class AnnouncementBoard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         Socket socket = ServerConnection.getServerConnection();
-        socket.emit("get_all_announcements", (Ack) args -> {
 
+        setContentView(R.layout.activity_announcement_board);
+        announcementContent = findViewById(R.id.textView7);
+        announcementTitle = findViewById(R.id.textView2);
+
+        socket.emit("get_all_announcements");
+
+        socket.on("all_announcements", args -> {
             JSONArray announcements;
             JSONArray announcementsToDisplay;
             try {
@@ -54,12 +61,7 @@ public class AnnouncementBoard extends AppCompatActivity {
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-
-
         });
-        setContentView(R.layout.activity_announcement_board);
-        //announcementContent = findViewById(R.id.textView7);
-        //announcementTitle = findViewById(R.id.textView2);
 
     }
 }
