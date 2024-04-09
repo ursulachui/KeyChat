@@ -69,8 +69,10 @@ public class ContactsView extends AppCompatActivity {
         profileBtn = findViewById(R.id.profile_btn);
 
         ContactViewAdapter cva = new ContactViewAdapter(item -> {
+            Chat c = getChatFromContact(item);
             Intent intent = new Intent(ContactsView.this, ChatView.class);
             intent.putExtra("name", item.getName());
+            intent.putExtra("chatID", c.getChatID());
             ContactsView.this.startActivity(intent);
         });
 
@@ -119,22 +121,21 @@ public class ContactsView extends AppCompatActivity {
             Contact c = new Contact(username, id);
             cva.addContact(c);
             JSONArray participants = new JSONArray().put(UserInfo.getUserID()).put(id);
-            socket.emit("create_chat", participants, UserInfo.getUsername() + " and " + username);
-            chats.add(new Chat(c, "filler"));
+            socket.emit("create_chat", participants, UserInfo.getUsername() + " and " + username, (Ack) args -> {
+                try {
+                    byte[] encryptedChatID = (byte[]) args[0];
+                    byte[] decryptedChatID = Encryptor.decrypt(encryptedChatID, TicketHandler.getShared_key());
+                    String chatID = new String(decryptedChatID, StandardCharsets.UTF_8);
+                    Log.d("CHATID", chatID);
+                    chats.add(new Chat(c, chatID));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
         if(intent.hasExtra("login")) {
             Toaster.toast("Signed in as " + intent.getStringExtra("login"), ContactsView.this);
         }
-
-        socket.on("chat_created", args -> {
-            try {
-                byte[] encryptedChatID = (byte[]) args[0];
-                byte[] decryptedChatID = Encryptor.decrypt(encryptedChatID, TicketHandler.getShared_key());
-                Log.d("CHATID", new String(decryptedChatID, StandardCharsets.UTF_8));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
 
         socket.on("chat_error", args -> {
             JSONObject error = (JSONObject) args[0];

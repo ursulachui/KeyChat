@@ -41,6 +41,11 @@ public class MessageViewAdapter extends RecyclerView.Adapter<MessageViewAdapter.
         notifyItemInserted(getItemCount()-1);
     }
 
+    public void clearLog() {
+        this.messages.clear();
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder{
 
         public TextView msgContent;

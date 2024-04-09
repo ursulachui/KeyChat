@@ -15,6 +15,11 @@ public class Message {
         this.time = date.toString();
     }
 
+    public Message(String msg, String author, String time) {
+        this(msg, author);
+        this.time = time;
+    }
+
     public String getMsg() {
         return msg;
     }
