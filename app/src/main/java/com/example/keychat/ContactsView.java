@@ -48,15 +48,6 @@ public class ContactsView extends AppCompatActivity {
 
     private JSONArray employees;
 
-    private ArrayList<Chat> chats = new ArrayList<>();
-
-    private Chat getChatFromContact(Contact c){
-        for(Chat chat: chats) {
-            if(chat.getContact() == c) return chat;
-        }
-        return null;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,26 +59,23 @@ public class ContactsView extends AppCompatActivity {
         newAnnounceBtn = findViewById(R.id.new_btn);
         profileBtn = findViewById(R.id.profile_btn);
 
+
+        Socket socket = ServerConnection.getServerConnection();
+        socket.emit("get_all_employees");
+
         ContactViewAdapter cva = new ContactViewAdapter(item -> {
-            Chat c = getChatFromContact(item);
             Intent intent = new Intent(ContactsView.this, ChatView.class);
             intent.putExtra("name", item.getName());
-            intent.putExtra("chatID", c.getChatID());
+            intent.putExtra("id", item.getId());
             ContactsView.this.startActivity(intent);
         });
 
         contactsView.setAdapter(cva);
         contactsView.setLayoutManager(new LinearLayoutManager(this));
 
-        Socket socket = ServerConnection.getServerConnection();
-        socket.emit("get_all_employees");
-
-        socket.on("all_employees", new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                employees = (JSONArray) args[0];
-                socket.emit("get_user_contacts", UserInfo.getUserID());
-            }
+        socket.on("all_employees", args -> {
+            employees = (JSONArray) args[0];
+            socket.emit("get_user_contacts", UserInfo.getUserID());
         });
 
         socket.on("user_contacts", args -> {
@@ -101,6 +89,7 @@ public class ContactsView extends AppCompatActivity {
                         if(employee.get("_id").equals(id)) {
                             runOnUiThread(() -> {
                                 try {
+                                    cva.clearContacts();
                                     cva.addContact(new Contact(employee.getString("username"), employee.getString("_id")));
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
@@ -114,37 +103,14 @@ public class ContactsView extends AppCompatActivity {
             }
         });
 
+        socket.on("contact_added", args -> {
+           socket.emit("get_user_contacts", UserInfo.getUserID());
+        });
+
         Intent intent = getIntent();
-        if(intent.hasExtra("username")){
-            String username = intent.getStringExtra("username");
-            String id = intent.getStringExtra("userid");
-            Contact c = new Contact(username, id);
-            cva.addContact(c);
-            JSONArray participants = new JSONArray().put(UserInfo.getUserID()).put(id);
-            socket.emit("create_chat", participants, UserInfo.getUsername() + " and " + username, (Ack) args -> {
-                try {
-                    byte[] encryptedChatID = (byte[]) args[0];
-                    byte[] decryptedChatID = Encryptor.decrypt(encryptedChatID, TicketHandler.getShared_key());
-                    String chatID = new String(decryptedChatID, StandardCharsets.UTF_8);
-                    Log.d("CHATID", chatID);
-                    chats.add(new Chat(c, chatID));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
         if(intent.hasExtra("login")) {
             Toaster.toast("Signed in as " + intent.getStringExtra("login"), ContactsView.this);
         }
-
-        socket.on("chat_error", args -> {
-            JSONObject error = (JSONObject) args[0];
-            try {
-                Log.d("ERROR", error.getString("error"));
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-        });
 
         addContactBtn.setOnClickListener(v -> {
             Intent i = new Intent(ContactsView.this, AddContact.class);

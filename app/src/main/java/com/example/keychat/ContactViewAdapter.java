@@ -48,6 +48,11 @@ public class ContactViewAdapter extends RecyclerView.Adapter<ContactViewAdapter.
         notifyItemInserted(getItemCount() - 1);
     }
 
+    public void clearContacts() {
+        this.contacts.clear();
+        notifyDataSetChanged();
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         public TextView name;

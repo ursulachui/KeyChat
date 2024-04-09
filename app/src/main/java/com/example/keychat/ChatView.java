@@ -20,17 +20,25 @@ public class ChatView extends AppCompatActivity {
     private RecyclerView log;
     private EditText enterMsg;
     private Button send;
+    private String chatID = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Socket socket = ServerConnection.getServerConnection();
+
         Intent intent = getIntent();
         String name = intent.getStringExtra("name");
-        String chatID = intent.getStringExtra("chatID");
+        String id = intent.getStringExtra("id");
         setTitle(name);
 
+        JSONArray participants = new JSONArray();
+        participants.put(UserInfo.getUserID());
+        participants.put(id);
+
+        socket.emit("get_chat_from_participants", participants);
 
         log = findViewById(R.id.log);
         enterMsg = findViewById(R.id.msg);
@@ -38,37 +46,30 @@ public class ChatView extends AppCompatActivity {
 
         MessageViewAdapter mva = new MessageViewAdapter();
         mva.addToLog(new Message("Now chatting with " + name, "system"));
-        mva.addToLog(new Message( "ChatID: " + chatID, "system"));
         log.setAdapter(mva);
         log.setLayoutManager(new LinearLayoutManager(this));
 
-        Socket socket = ServerConnection.getServerConnection();
-        socket.emit("get_chat", chatID, TicketHandler.getShared_key().getEncoded());
-
         send.setOnClickListener(v -> {
             String s = enterMsg.getText().toString();
-            if(!s.isEmpty()) {
+            if (!s.isEmpty()) {
                 socket.emit("add_chat_message", chatID, UserInfo.getUserID(), s);
             }
         });
 
         socket.on("message_added", args -> {
-            socket.emit("get_chat", chatID, TicketHandler.getShared_key().getEncoded());
+            socket.emit("get_chat_from_participants", participants);
         });
 
-        socket.on("chat_retrieved", args -> {
+        socket.on("chat_data", args -> {
             JSONObject chat = (JSONObject) args[0];
             try {
-                String id = chat.getString("_id");
-                JSONArray participants = chat.getJSONArray("participants");
-                String createdAt = chat.getString("createdAt");
+                chatID = chat.getString("_id");
                 JSONArray messages = chat.getJSONArray("messages");
                 runOnUiThread(() -> {
                     mva.clearLog();
                     mva.addToLog(new Message("Now chatting with " + name, "system"));
-                    mva.addToLog(new Message( "ChatID: " + chatID, "system"));
                 });
-                for(int i = 0; i < messages.length(); i++) {
+                for (int i = 0; i < messages.length(); i++) {
                     JSONObject message = messages.getJSONObject(i);
                     Message m = new Message(message.getString("content"), message.getString("senderId"), message.getString("sentAt"));
                     runOnUiThread(() -> {
@@ -78,6 +79,10 @@ public class ChatView extends AppCompatActivity {
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
+        });
+
+        socket.on("chat_not_found", args -> {
+           Toaster.toast("Error", ChatView.this);
         });
     }
 }

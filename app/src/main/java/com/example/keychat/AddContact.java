@@ -38,20 +38,7 @@ public class AddContact extends AppCompatActivity {
 
         socket.on("contact_added", args -> {
             Toaster.toast("added", AddContact.this);
-            JSONObject contactJson = null;
-            try {
-                contactJson = ((JSONObject) args[0]).getJSONObject("employee");
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-            Intent i = new Intent(AddContact.this, ContactsView.class);
-            try {
-                i.putExtra("username",contactJson.getString("username"));
-                i.putExtra("userid", contactJson.getString("_id"));
-                AddContact.this.startActivity(i);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
+            finish();
         });
 
         socket.on("contact_not_found", args -> Toaster.toast("Contact does not exist", AddContact.this));
