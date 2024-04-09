@@ -19,14 +19,14 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 public class Encryptor {
-    private static String tgt;
+    private static byte[] tgt;
     private static SecretKey session_key;
 
-    public static String getTgt() {
+    public static byte[] getTgt() {
         return tgt;
     }
 
-    public static void setTgt(String tgt) {
+    public static void setTgt(byte[] tgt) {
         Encryptor.tgt = tgt;
     }
 
@@ -66,10 +66,12 @@ public class Encryptor {
 
     public static SecretKey getKeyFromPassword(String password) throws NoSuchAlgorithmException {
         byte[] inputBytes = password.getBytes(StandardCharsets.UTF_8);
-        for(byte b : inputBytes) Log.d("initial", String.valueOf(b));
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] newKey = md.digest(inputBytes);
-        for(byte b : inputBytes) Log.d("md", String.valueOf(b));
         return new SecretKeySpec(newKey,"AES");
+    }
+
+    public static SecretKey getKeyFromBytes(byte[] bytes) {
+        return new SecretKeySpec(bytes, "AES");
     }
 }

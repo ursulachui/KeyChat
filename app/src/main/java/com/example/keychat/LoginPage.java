@@ -109,10 +109,12 @@ public class LoginPage extends AppCompatActivity {
                 }
                 Log.d("KEY", new String(decryptedSessionKey, StandardCharsets.UTF_8));
                 Log.d("TGT", new String(decryptedTgt, StandardCharsets.UTF_8));
+                Encryptor.setTgt(decryptedTgt);
+                Encryptor.setSession_key(Encryptor.getKeyFromBytes(decryptedSessionKey));
                 String username = "text";
                 String recipient = "server";
                 socket.emit("get_ticket", username, recipient, Encryptor.getTgt(), (Ack) ticketArgs -> {
-                    String recipientResponse = (String) ticketArgs[0];
+                    byte[] recipientResponse = (byte[]) ticketArgs[0];
                     byte[] encryptedSharedKey = (byte[]) ticketArgs[1];
                     byte[] encryptedTicket = (byte[]) ticketArgs[2];
                     byte[] decryptedSharedKey;
@@ -123,6 +125,7 @@ public class LoginPage extends AppCompatActivity {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
+                    Log.d("TICKET", new String(decryptedTicket, StandardCharsets.UTF_8));
                     TicketHandler.setTicket(decryptedTicket);
                     TicketHandler.setShared_key(new SecretKeySpec(decryptedSharedKey,"AES"));
                     socket.emit("use_ticket", username, recipient, TicketHandler.getTicket(), (Ack) useticketargs -> {
