@@ -53,12 +53,7 @@ public class ChatView extends AppCompatActivity {
         });
 
         socket.on("message_added", args -> {
-            runOnUiThread(() -> {
-                mva.clearLog();
-                mva.addToLog(new Message("Now chatting with " + name, "system"));
-                mva.addToLog(new Message( "ChatID: " + chatID, "system"));
-            });
-                socket.emit("get_chat", chatID, TicketHandler.getShared_key().getEncoded());
+            socket.emit("get_chat", chatID, TicketHandler.getShared_key().getEncoded());
         });
 
         socket.on("chat_retrieved", args -> {
@@ -68,6 +63,11 @@ public class ChatView extends AppCompatActivity {
                 JSONArray participants = chat.getJSONArray("participants");
                 String createdAt = chat.getString("createdAt");
                 JSONArray messages = chat.getJSONArray("messages");
+                runOnUiThread(() -> {
+                    mva.clearLog();
+                    mva.addToLog(new Message("Now chatting with " + name, "system"));
+                    mva.addToLog(new Message( "ChatID: " + chatID, "system"));
+                });
                 for(int i = 0; i < messages.length(); i++) {
                     JSONObject message = messages.getJSONObject(i);
                     Message m = new Message(message.getString("content"), message.getString("senderId"), message.getString("sentAt"));
