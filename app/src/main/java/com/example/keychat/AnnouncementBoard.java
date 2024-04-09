@@ -39,25 +39,17 @@ public class AnnouncementBoard extends AppCompatActivity {
 
         socket.on("all_announcements", args -> {
             JSONArray announcements;
-            JSONArray announcementsToDisplay;
             try {
                 announcements = (JSONArray) args[0];
-                if (announcements.length() <= 2) {
-                    announcementsToDisplay = announcements;
-                } else {
-                    announcementsToDisplay = new JSONArray(new JSONObject[]{announcements.getJSONObject(0),announcements.getJSONObject(1)});
-                }
-                for (int i = 0; i < announcementsToDisplay.length(); i++) {
-                    JSONObject announcement = announcementsToDisplay.getJSONObject(i);
-                    String title = announcement.getString("title");
-                    String content = announcement.getString("content");
-                    String createdAt = announcement.getString("createdAt");
-                    String createdBy = announcement.getString("createdBy");
-                    runOnUiThread(() -> {
-                        announcementTitle.setText(title);
-                        announcementContent.setText(content);
-                    });
-                }
+                JSONObject announcement = announcements.getJSONObject(announcements.length() -1);
+                String title = announcement.getString("title");
+                String content = announcement.getString("content");
+                String createdAt = announcement.getString("createdAt");
+                String createdBy = announcement.getString("createdBy");
+                runOnUiThread(() -> {
+                    announcementTitle.setText(title);
+                    announcementContent.setText(content);
+                });
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }

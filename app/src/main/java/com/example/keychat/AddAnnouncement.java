@@ -11,6 +11,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
+
 public class AddAnnouncement extends AppCompatActivity {
 
     private EditText contentText;
@@ -24,9 +30,23 @@ public class AddAnnouncement extends AppCompatActivity {
         sendButton = findViewById(R.id.button2);
         contentText = findViewById(R.id.editTextTextMultiLine);
 
+        Socket socket = ServerConnection.getServerConnection();
+
         sendButton.setOnClickListener(v -> {
-            Announcement a = new Announcement(contentText.getText().toString(), "Employee");
+            JSONObject announcement = new JSONObject();
+            try {
+                announcement.accumulate("title", "Title");
+                announcement.accumulate("content", contentText.getText().toString());
+                announcement.accumulate("createdBy", UserInfo.getUserID());
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            socket.emit("create_announcement", announcement);
             finish();
+        });
+
+        socket.on("announcement_created", args -> {
+           Toaster.toast("Created Announcement", AddAnnouncement.this);
         });
     }
 }
